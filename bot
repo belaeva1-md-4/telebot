@@ -1,0 +1,5 @@
+import requests
+
+res = requests.get('https://www.meteoservice.ru/weather/today/sankt-peterburg-primorskiy')
+
+print(res)
