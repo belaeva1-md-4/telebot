@@ -2,7 +2,7 @@ import telebot
 from dispatcher import db
 from копия import botBase
 botBase=botBase('db')
-bot = telebot.TeleBot("6215381559:AAEThVyZ-HYwlQfXkpLJAmWovz4lghUQ8zc")
+bot = telebot.TeleBot("...")
 
 
 
