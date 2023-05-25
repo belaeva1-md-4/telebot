@@ -1,6 +1,6 @@
 import telebot
 from pyowm import OWM
-bot = telebot.TeleBot("6215381559:AAEThVyZ-HYwlQfXkpLJAmWovz4lghUQ8zc")
+bot = telebot.TeleBot("...")
 
 def get_location(lat, lon):
     url=f"https://yandex.ru/pogoda/maps/nowcast?lat={lat}&lon={lon}&via=hnav&le_Lightning=1"
