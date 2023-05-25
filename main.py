@@ -1,61 +1,46 @@
 import telebot
-from telebot import types
-import json
-from geopy import geocoders
-from os import environ
+from dispatcher import db
+from копия import botBase
+botBase=botBase('db')
 bot = telebot.TeleBot("6215381559:AAEThVyZ-HYwlQfXkpLJAmWovz4lghUQ8zc")
-token_accu=environ["2wxoy7OiAMS5Wea588ib4mwO7WjGZ3V5"]
-token_yandex=environ["7452afd2-2932-488b-9d6e-02a2e8437274"]
-
-
-@bot.message_handler(content_types=['text'])#!!!
-
-def get_text_messages(message):
-
-    keyboard = types.InlineKeyboardMarkup()  # наша клавиатура
-    key_yes = types.InlineKeyboardButton(text='Да', callback_data='yes')  # кнопка «Да»
-    keyboard.add(key_yes)
-    key_no = types.InlineKeyboardButton(text='Нет', callback_data='no')
-    keyboard.add(key_no)
-    question = "Привет, хочешь прислать мне свой гардероб? Я могу посоветовать, в чем сегодня лучше выйти на улицу"
-    bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_worker(call):
-    if call.data == "yes":
-        bot.register_next_step_handler (get_cloth)
-    elif call.data == "no":
-        bot.send_message(call.message.chat.id, 'До встречи!')
-
-def get_cloth(shtyka, temp,  message):
-    bot.send_message(message.from_user.id, 'Напиши что это за вещь')
-    shtyka=message.text
-    bot.send_message(message.from_user.id, 'напиши насколько вещь теплая : )')
-    temp = message.text
-
-    keyboard = types.InlineKeyboardMarkup()
-    key_yes = types.InlineKeyboardButton(text='Да', callback_data='yes')
-    keyboard.add(key_yes)
-    key_no = types.InlineKeyboardButton(text='Нет', callback_data='no')
-    keyboard.add(key_no)
-    question = "Это все?"
-    bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_worker1(call, message):
-    if call.data == "yes":
-        bot.send_message(call.message.chat.id, 'Я запомню')
-    elif call.data == "no":
-        bot.register_next_step_handler(message, get_cloth)
-
-def website(message):
-    ma = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-    photo1 = types.KeyboardButton('/photo1')
-    photo2 = types.KeyboardButton('photo2')
-    ma.add(photo1, photo2)
-    bot.send_message(message.chat.id, "l2", reply_markup=ma)
 
 
 
-bot.polling(none_stop=True, interval=0)
+
+
+
+
+import sqlite3
+class dorDB:
+    def __init__(self, db_file):
+        #инициализация соединения с БД
+        self.connect = sqlite3.connect(db_file)
+        self.cursor=self.connect.cursor()
+    def user_exists(self, user_id):
+        # проверка есть ли юзер в БД
+        result=self.cursor.execute("SELECT 'id' FROM 'users WHERE 'user_id' = ?", (user_id,))
+        return bool(len(result.fetchall()))
+    def get_user_id(self, user_id):
+        #получаем id юзера в базе по его user_id в телеграмме
+        result=self.cursor.execute("SELECT 'id' FROM 'users' WHERE 'user_id' =  ?", (user_id))
+        return result.fetchone()[0]
+    def add_user(self, user_id):
+        #добавляем юзера в БД
+        self.cursor.execute("INSERT  INTO 'users' ('user_id') VALUES (?)", (user_id,))
+        return self.connect.commit()
+    async def add(item):
+        m=[]
+        m.append(item)
+        cursor = connect.cursor()
+        cursor.execute('INSERT INTO ')
+
+    def close(self):
+        self.connect.close()
+
+
+ #connection=sqlite3.connect('db.sql')
+    #cursor=connection.cursor()
+    #cursor.execute('CREATE TABLE IF NOT EXISTS users (id int auto_increment primary key, name varchar(50)), item varchar, category varchar, vremyagoda varchar, temp varchar')
+    #connection.commit()
+
 

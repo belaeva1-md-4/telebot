@@ -9,11 +9,14 @@ vremyagoda=None
 temp=None
 
 
+
+
 @bot.message_handler(commands=['start']) #реакция на команду
 def get_text_messages(message):
     global name
     connection=sqlite3.connect('db.sql')
     cursor=connection.cursor()
+
     cursor.execute('CREATE TABLE IF NOT EXISTS users (id int auto_increment primary key, name varchar(50), item varchar(50), category varchar(50), vremyagoda varchar(50), temp varchar(50))')
     connection.commit()# *много мата*
     cursor.close()
@@ -34,11 +37,16 @@ def otvet(message):
         msg=bot.send_message(message.chat.id, text="Назовите как нибудь эту вещь")
         bot.register_next_step_handler(msg, category)
     elif (message.text=="Пока"):
-        bot.send_message(message.chat.id, text="До встречи!")
-    elif (message.text=="Хочу получить подборку на сегодня"):
-        print("хз пока")
+        bot.send_message(message.chat.id, text="До встречи")
 
 
+def item1(item1):
+    connection = sqlite3.connect('db.sql')
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO users(item) VALUES ('%s')" % (item1,)) #ЗаЧеМкАкЗаПяТаЯАААА
+    connection.commit()
+
+    category(item1)
 def category(message):
     global item
     item= message.text
@@ -62,16 +70,6 @@ def otvet1(message):
         sweater(message)
     elif(message.text=="Футболка/Тонкий низ"):
         shirt(message)
-    elif (message.text=="Юбка"):
-        connection = sqlite3.connect('db.sql')
-        cursor = connection.cursor()
-        cursor.execute('INSERT INTO users(name, item, category) VALUES (?, ?, ?)',
-                       (name, item, catg,))  # добавляем все одним действием иначе смерть
-        connection.commit()
-        cursor.close()
-        connection.close()
-        bot.send_message(message.chat.id, text="Запомню!")
-
 
 def verh(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False, one_time_keyboard=True)
@@ -81,6 +79,7 @@ def verh(message):
     keyboard.add(key1, key2, key3)
     msg=bot.send_message(message.chat.id, text="В какое время года вы носите эту вещь?", reply_markup=keyboard)
     bot.register_next_step_handler(msg, jacket1)
+
 def jacket1(message):
     global vremyagoda
     vremyagoda = message.text
@@ -92,7 +91,7 @@ def jacket1(message):
         key3 = types.KeyboardButton(text='В теплые дни')
         keyboard.add(key1, key2, key3)
         msg=bot.send_message(message.chat.id, text="В какую температуру обычно носите?", reply_markup=keyboard)
-        bot.register_next_step_handler(msg, add)
+        bot.register_next_step_handler(msg, zap)
 
     elif (message.text=='Летняя'):
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False,
@@ -102,7 +101,7 @@ def jacket1(message):
         key3 = types.KeyboardButton(text='Когда жарко')
         keyboard.add(key1, key2, key3)
         msg=bot.send_message(message.chat.id, text="В какую температуру обычно носите?", reply_markup=keyboard)
-        bot.register_next_step_handler(msg, add)
+        bot.register_next_step_handler(msg, zap)
 
     elif (message.text == 'Осень-весна'):
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False,
@@ -112,7 +111,7 @@ def jacket1(message):
         key3 = types.KeyboardButton(text='Когда жарко')
         keyboard.add(key1, key2, key3)
         msg=bot.send_message(message.chat.id, text="В какую температуру обычно носите?", reply_markup=keyboard)
-        bot.register_next_step_handler(msg, add)
+        bot.register_next_step_handler(msg, zap)
 
 
 def sweater(message):
@@ -123,9 +122,7 @@ def sweater(message):
     key3 = types.KeyboardButton(text='Тонкий')
     keyboard.add(key1, key2, key3)
     msg = bot.send_message(message.chat.id, text="Насколько он теплый?", reply_markup=keyboard)
-    bot.register_next_step_handler(msg, add_other)
-
-
+    bot.register_next_step_handler(msg, zap)
 
 def shirt(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False,
@@ -135,40 +132,24 @@ def shirt(message):
     key3 = types.KeyboardButton(text='Тонкий')
     keyboard.add(key1, key2, key3)
     msg = bot.send_message(message.chat.id, text="Насколько плотная вещь?", reply_markup=keyboard)
-    bot.register_next_step_handler(msg, add_other)
-def add_other(message):
+    bot.register_next_step_handler(msg, zap)
+
+
+def zap(message):
     global temp
-    temp = message.text
-    connection = sqlite3.connect('db.sql')
-    cursor = connection.cursor()
-    cursor.execute('INSERT INTO users(name, item, category, temp) VALUES (?, ?, ?, ?)',
-                   (name, item, catg, temp,))  # добавляем все одним действием и запятую иначе смерть
-    connection.commit()
-    cursor.close()
-    connection.close()
+    temp=message.text
     bot.send_message(message.chat.id, text="Запомню!")
+    bot.register_next_step_handler(message, add)
 
 
 def add(message):
-    global temp
-    temp=message.text
     connection = sqlite3.connect('db.sql')
     cursor = connection.cursor()
     cursor.execute('INSERT INTO users(name, item, category, vremyagoda, temp) VALUES (?, ?, ?, ?, ?)',
-                   (name, item, catg, vremyagoda, temp,))  # добавляем все одним действием и запятую иначе смерть
+                   (name, item, catg, vremyagoda, temp,))  # добавляем все одним действием иначе смерть
     connection.commit()
     cursor.close()
     connection.close()
-    bot.send_message(message.chat.id, text="Запомню!")
-
-#написать алгоритм обработки
-
-
-
-
-
-
-
 
 
 bot.polling(none_stop=True, interval=0)
