@@ -1,7 +1,7 @@
 import telebot
 from telebot import types
 import sqlite3
-bot = telebot.TeleBot("...")
+bot = telebot.TeleBot("6215381559:AAEThVyZ-HYwlQfXkpLJAmWovz4lghUQ8zc")
 name=None
 item=None
 catg=None

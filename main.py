@@ -4,8 +4,12 @@ from копия import botBase
 botBase=botBase('db')
 bot = telebot.TeleBot("...")
 
-
-
+#есть ли в базе id
+cur = con.cursor()
+chat_id = message.chat.id
+exists = cur.execute("SELECT 1 FROM info1 WHERE id = ?", [chat_id]).fetchone()
+text = "Bd check" if exists else "Bd netu"
+bot.send_message(chat_id, text)
 
 
 

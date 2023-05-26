@@ -1,6 +1,6 @@
 import telebot
 from pyowm import OWM
-bot = telebot.TeleBot("...")
+bot = telebot.TeleBot("6215381559:AAEThVyZ-HYwlQfXkpLJAmWovz4lghUQ8zc")
 
 def get_location(lat, lon):
     url=f"https://yandex.ru/pogoda/maps/nowcast?lat={lat}&lon={lon}&via=hnav&le_Lightning=1"
@@ -29,6 +29,7 @@ def get_weather(message):
     try:
         w=weather(city)
         bot.send_message(message.from_user.id, f"В городе {city} сейчас {round( w[0]['temp'] ) } градусов, "f" чувствуется как {round(w[0]['feels_like'])} градусов")
+        print(round(w[0]['feels_like']))
         seg=str({round(w[0]['feels_like'])})
         bot.send_message(message.from_user.id, "Введите название города")
         bot.register_next_step_handler(message, get_weather)

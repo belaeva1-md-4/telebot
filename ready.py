@@ -1,12 +1,14 @@
 import telebot
 from telebot import types
 import sqlite3
-bot = telebot.TeleBot("...")
+from pyowm import OWM
+bot = telebot.TeleBot("6215381559:AAEThVyZ-HYwlQfXkpLJAmWovz4lghUQ8zc")
 name=None
 item=None
 catg=None
 vremyagoda=None
 temp=None
+
 
 
 @bot.message_handler(commands=['start']) #реакция на команду
@@ -24,8 +26,9 @@ def get_text_messages(message):
     key_yes = types.KeyboardButton(text='Да')
     key_no = types.KeyboardButton(text='Пока')
     key_get = types.KeyboardButton(text='Хочу получить подборку на сегодня')
-    keyboard.add(key_no, key_yes, key_get)
-    bot.send_message(message.chat.id, 'Привет, ' +name + '!Xочешь прислать мне свой гардероб? Я могу посоветовать, в чем сегодня лучше выйти на улицу', reply_markup=keyboard)
+    key_pogoda = types.KeyboardButton(text='Хочу узнать погоду')
+    keyboard.add(key_no, key_yes, key_get, key_pogoda)
+    bot.send_message(message.chat.id, 'Привет, ' +name + '! Xочешь прислать мне свой гардероб? Я могу посоветовать, в чем сегодня лучше выйти на улицу', reply_markup=keyboard)
 
 @bot.message_handler(content_types=['text']) #реакйия на любой текст, выполняется один раз
 def otvet(message):
@@ -37,6 +40,10 @@ def otvet(message):
         bot.send_message(message.chat.id, text="До встречи!")
     elif (message.text=="Хочу получить подборку на сегодня"):
         print("хз пока")
+    elif (message.text=="Хочу узнать погоду"):
+        get_text_messages(message)
+
+
 
 
 def category(message):
@@ -165,6 +172,68 @@ def add(message):
 
 
 
+
+
+
+#погода
+
+def get_location(lat, lon):
+    url=f"https://yandex.ru/pogoda/maps/nowcast?lat={lat}&lon={lon}&via=hnav&le_Lightning=1"
+    return url
+
+def weather(city: str):
+    owm=OWM("482833602a3b416d53c156c563297579")
+    mgr=owm.weather_manager()
+    observation=mgr.weather_at_place(city)
+    weather=observation.weather
+    location=get_location(observation.location.lat, observation.location.lon)
+    temperature=weather.temperature("celsius")
+    return temperature, location
+
+def get_text_messages(message):
+    bot.send_message(message.from_user.id, "Введите название города")
+    bot.register_next_step_handler(message, get_weather)
+
+seg=None
+def get_weather(message):
+    city=message.text
+    global seg
+    try:
+        w=weather(city)
+        bot.send_message(message.from_user.id, f"В городе {city} сейчас {round( w[0]['temp'] ) } градусов, "f" чувствуется как {round(w[0]['feels_like'])} градусов")
+        seg=str({round(w[0]['feels_like'])})
+        bot.send_message(message.from_user.id, "Введите название города")
+        bot.register_next_step_handler(message, get_weather)
+    except Exception:
+        bot.send_message(message.from_user.id, "Такого города нет в базе")
+        bot.send_message(message.from_user.id,"Введите название города")
+        bot.register_next_step_handler(message, get_weather)
+
+
+def sort():
+    connection=sqlite3.connect('db.sql')
+    cursor=connection.cursor()
+    #cursor.execute("SELECT 'name' FROM 'users' WHERE '' = ?", (name,))
+    #connection.commit()
+    cursor.execute('SELECT * FROM users')
+    users=cursor.fetchall()
+    polz=[]
+    for el in users:
+        if {el[1]}==name:
+            polz.append(el[1])
+    print(*polz)
+
+
+    '''while True:
+        stroka = cursor.fetchone()
+        if stroka:
+            print(stroka)
+        else:
+            break'''
+    cursor.close()
+    connection.close()
+
+sort()
 
 
 
