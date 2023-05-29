@@ -23,7 +23,7 @@ def get_text_messages(message):
 
     name=message.from_user.first_name
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=False, one_time_keyboard=True)  # наша клавиатура
-    key_yes = types.KeyboardButton(text='Да')
+    key_yes = types.KeyboardButton(text='Добавить вещь')
     key_no = types.KeyboardButton(text='Пока')
     key_get = types.KeyboardButton(text='Хочу получить подборку на сегодня')
     key_pogoda = types.KeyboardButton(text='Хочу узнать погоду')
@@ -33,7 +33,7 @@ def get_text_messages(message):
 
 @bot.message_handler(content_types=['text']) #реакйия на любой текст, выполняется один раз
 def otvet(message):
-    if (message.text=='Да'):
+    if (message.text=='Добавить вещь'):
         #cursor.execute(f'ALTER TABLE users ADD COLUMN item varchar')#!@!!!! сделать так, чтобы польз был тут один раз!!! try?
         msg=bot.send_message(message.chat.id, text="Назовите как нибудь эту вещь")
         bot.register_next_step_handler(msg, category)
