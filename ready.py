@@ -39,7 +39,7 @@ def otvet(message):
     elif (message.text=="Пока"):
         bot.send_message(message.chat.id, text="До встречи!")
     elif (message.text=="Хочу получить подборку на сегодня"):
-        print("хз пока")
+        get_text_messages1(message)
     elif (message.text=="Хочу узнать погоду"):
         get_text_messages(message)
 
@@ -56,7 +56,8 @@ def category(message):
     key4 = types.KeyboardButton(text='Футболка/Тонкий низ')
     key5 = types.KeyboardButton(text='Свитер')
     key6 = types.KeyboardButton(text='Юбка')
-    keyboard.add(key1, key2, key3, key4, key5, key6)
+    key7=types.KeyboardButton(text='Назад')
+    keyboard.add(key1, key2, key3, key4, key5, key6, key7)
     msg = bot.send_message(message.chat.id, text="К какой категории можно отнести эту вещь?", reply_markup=keyboard)
     bot.register_next_step_handler(msg, otvet1)  # Запомни как ты с этим ебалась и запомни (после получения ответа(кнопки) переходим)
 
@@ -78,6 +79,8 @@ def otvet1(message):
         cursor.close()
         connection.close()
         bot.send_message(message.chat.id, text="Запомню!")
+    elif (message.text=="Назад"):
+        get_text_messages(message)
 
 
 def verh(message):
@@ -85,7 +88,8 @@ def verh(message):
     key1 = types.KeyboardButton(text='Зимняя')
     key2 = types.KeyboardButton(text='Летняя')
     key3 = types.KeyboardButton(text='Осень-весна')
-    keyboard.add(key1, key2, key3)
+    key4 = types.KeyboardButton(text='Назад')
+    keyboard.add(key1, key2, key3, key4)
     msg=bot.send_message(message.chat.id, text="В какое время года вы носите эту вещь?", reply_markup=keyboard)
     bot.register_next_step_handler(msg, jacket1)
 def jacket1(message):
@@ -120,6 +124,8 @@ def jacket1(message):
         keyboard.add(key1, key2, key3)
         msg=bot.send_message(message.chat.id, text="В какую температуру обычно носите?", reply_markup=keyboard)
         bot.register_next_step_handler(msg, add)
+    elif (message.text == "Назад"):
+        category(message)
 
 
 def sweater(message):
@@ -173,8 +179,6 @@ def add(message):
 
 
 
-
-
 #погода
 
 def get_location(lat, lon):
@@ -194,14 +198,13 @@ def get_text_messages(message):
     bot.send_message(message.from_user.id, "Введите название города")
     bot.register_next_step_handler(message, get_weather)
 
-seg=None
+
 def get_weather(message):
     city=message.text
-    global seg
     try:
         w=weather(city)
         bot.send_message(message.from_user.id, f"В городе {city} сейчас {round( w[0]['temp'] ) } градусов, "f" чувствуется как {round(w[0]['feels_like'])} градусов")
-        seg=str({round(w[0]['feels_like'])})
+        pog=str({round(w[0]['feels_like'])})
         bot.send_message(message.from_user.id, "Введите название города")
         bot.register_next_step_handler(message, get_weather)
     except Exception:
@@ -209,31 +212,98 @@ def get_weather(message):
         bot.send_message(message.from_user.id,"Введите название города")
         bot.register_next_step_handler(message, get_weather)
 
+def get_text_messages1(message):
+    bot.send_message(message.from_user.id, "Введите название города")
+    bot.register_next_step_handler(message, get_weather1)
 
-def sort():
+pog=None
+def get_weather1(message):
+    city=message.text
+    global pog
+    w=weather(city)
+    pog=str({round(w[0]['feels_like'])})
+    sort_po_polz(message)
+
+def sort_po_polz(message):
+    name='Tovarish zamaetov'
     connection=sqlite3.connect('db.sql')
     cursor=connection.cursor()
-    #cursor.execute("SELECT 'name' FROM 'users' WHERE '' = ?", (name,))
-    #connection.commit()
     cursor.execute('SELECT * FROM users')
     users=cursor.fetchall()
     polz=[]
     for el in users:
-        if {el[1]}==name:
-            polz.append(el[1])
-    print(*polz)
-
-
-    '''while True:
-        stroka = cursor.fetchone()
-        if stroka:
-            print(stroka)
-        else:
-            break'''
+        if el[1]==name:
+            polz.append(el)
+    kurtka=[]
+    obuv = []
+    shirt = []
+    sweater = []
+    skirt = []
+    footb = []
+    for el in polz:
+        if el[3]=='Куртка':
+            kurtka.append(el[3])
+        if el[3]=='Обувь':
+            obuv.append(el[3])
+        if el[3]=='Штаны':
+            shirt.append(el[3])
+        if el[3]=='Свитер':
+            sweater.append(el[3])
+        if el[3]=='Юбка':
+            skirt.append(el[3])
+        if el[3]=='Футболка/Тонкий низ':
+            footb.append(el[3])
     cursor.close()
     connection.close()
 
-sort()
+    algo(kurtka, message)
+
+
+def algo(kurtka, message):#сделать связь с погодой!!!
+    k_pod=[]
+    print(int(pog))
+    for el in kurtka:
+        if el[3]=="Куртка":
+            if pog<-20:
+                for el in kurtka:
+                    if el[4]=='Сильные холода':
+                        k_pod.append(el[2])
+            elif -20<pog<-10:
+                for el in kurtka:
+                    if el[4] == 'В обычную температуру':
+                        k_pod.append(el[2])
+            elif -10<pog<0:
+                for el in kurtka:
+                    if el[4] == 'В теплые дни':
+                        k_pod.append(el[2])
+    print(*k_pod)
+
+    '''elif el[3] == "Штаны":
+        if el[4] == "Зимняя":
+            if el[5]== 'В сильные холода':
+                a=25
+                if S not in N:S+=a
+            elif el[5]=='В обычную температуру':
+                a=20
+                if S not in N:S+=a
+            elif el[5] =='В теплые дни':
+                a=15
+                if S not in N: S += a
+        #elif el[4] == "Летняя":
+
+        #elif el[4] == "Осень-Весна":
+    elif el[3] == "Обувь":
+        if el[4] == "Зимняя":
+            if el[5] == 'В сильные холода':
+                a = 25
+                if S not in N: S += a
+            elif el[5] == 'В обычную температуру':
+                a = 20
+                if S not in N: S += a
+            elif el[5] == 'В теплые дни':
+                a = 15
+                if S not in N: S += a'''
+    #bot.send_message(message.chat.id, f"Сегодня {pog} градусов. Можно надеть " + k_pod[0])
 
 
 
@@ -249,3 +319,4 @@ bot.polling(none_stop=True, interval=0)
 #Где-то хранить данные??*
 #Реализовать обучение???*
 #рассылка
+#взять среднестат темп страны+отталкиваться от нее
