@@ -27,7 +27,8 @@ def get_text_messages(message):
     key_no = types.KeyboardButton(text='Пока')
     key_get = types.KeyboardButton(text='Хочу получить подборку на сегодня')
     key_pogoda = types.KeyboardButton(text='Хочу узнать погоду')
-    keyboard.add(key_no, key_yes, key_get, key_pogoda)
+    key_spisok = types.KeyboardButton(text='Выведи мой список')
+    keyboard.add(key_no, key_yes, key_get, key_pogoda, key_spisok)
     bot.send_message(message.chat.id, 'Привет, ' +name + '! Xочешь прислать мне свой гардероб? Я могу посоветовать, в чем сегодня лучше выйти на улицу', reply_markup=keyboard)
 
 @bot.message_handler(content_types=['text']) #реакйия на любой текст, выполняется один раз
@@ -42,8 +43,8 @@ def otvet(message):
         get_text_messages1(message)
     elif (message.text=="Хочу узнать погоду"):
         get_text_messages(message)
-
-
+    elif (message.text == "Выведи мой список"):
+        get_spisok(message)
 
 
 def category(message):
@@ -176,7 +177,23 @@ def add(message):
 
 #написать алгоритм обработки
 
-
+def get_spisok(message):
+    connection = sqlite3.connect('db.sql')
+    cursor = connection.cursor()
+    cursor.execute('SELECT * FROM users')
+    users = cursor.fetchall()
+    info = ""
+    for el in users:
+        if el[1] == name:
+            if el[3]=='Юбка':
+                info += 'Имя - ' + str(el[2]) + '. Категория - ' + str(el[3])+'\n'
+            elif el[3]=="Свитер" or "Футболка/Тонкий низ":
+                info += 'Имя - ' + str(el[2]) + '. Категория - ' + str(el[3]) + '. Температура - ' + str(el[5]) + '\n'
+            else:
+                info+= 'Имя - ' +str(el[2])+'. Категория - '+str(el[3])+'. Время года - '+str(el[4])+'. Температура - '+str(el[5])+'\n'
+    bot.send_message(message.chat.id, info)
+    cursor.close()
+    connection.close()
 
 
 #погода
@@ -254,7 +271,6 @@ def sort_po_polz(message):
             footb.append(el)
     cursor.close()
     connection.close()
-    print(pog)
 
     algo(kurtka, message)
 
