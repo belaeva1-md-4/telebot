@@ -215,17 +215,16 @@ def get_weather(message):
 def get_text_messages1(message):
     bot.send_message(message.from_user.id, "Введите название города")
     bot.register_next_step_handler(message, get_weather1)
-
-pog=None
+pog=int(0)
 def get_weather1(message):
     city=message.text
-    global pog
     w=weather(city)
-    pog=str({round(w[0]['feels_like'])})
+    global pog
+    pog=(round(w[0]['feels_like']))
+
     sort_po_polz(message)
 
 def sort_po_polz(message):
-    name='Tovarish zamaetov'
     connection=sqlite3.connect('db.sql')
     cursor=connection.cursor()
     cursor.execute('SELECT * FROM users')
@@ -242,41 +241,59 @@ def sort_po_polz(message):
     footb = []
     for el in polz:
         if el[3]=='Куртка':
-            kurtka.append(el[3])
+            kurtka.append(el)
         if el[3]=='Обувь':
-            obuv.append(el[3])
+            obuv.append(el)
         if el[3]=='Штаны':
-            shirt.append(el[3])
+            shirt.append(el)
         if el[3]=='Свитер':
-            sweater.append(el[3])
+            sweater.append(el)
         if el[3]=='Юбка':
-            skirt.append(el[3])
+            skirt.append(el)
         if el[3]=='Футболка/Тонкий низ':
-            footb.append(el[3])
+            footb.append(el)
     cursor.close()
     connection.close()
+    print(pog)
 
     algo(kurtka, message)
 
 
 def algo(kurtka, message):#сделать связь с погодой!!!
     k_pod=[]
-    print(int(pog))
     for el in kurtka:
-        if el[3]=="Куртка":
-            if pog<-20:
-                for el in kurtka:
-                    if el[4]=='Сильные холода':
-                        k_pod.append(el[2])
-            elif -20<pog<-10:
-                for el in kurtka:
-                    if el[4] == 'В обычную температуру':
-                        k_pod.append(el[2])
-            elif -10<pog<0:
-                for el in kurtka:
-                    if el[4] == 'В теплые дни':
-                        k_pod.append(el[2])
+        if pog < (-8):
+            if el[4]=="Зимняя":
+                if pog<-20:
+                    for el in kurtka:
+                        if el[5]=='Сильные холода':
+                            k_pod.append(el[2])
+                elif -20<pog<-10:
+                    for el in kurtka:
+                        if el[5] == 'В обычную температуру':
+                            k_pod.append(el[2])
+                elif -10<pog<0:
+                    for el in kurtka:
+                        if el[5] == 'В теплые дни':
+                            k_pod.append(el[2])
+        if pog>10:
+            if el[4]=="Летняя":
+                if pog<18:
+                    for el in kurtka:
+                        if el[5]=='Холодное лето':
+                            k_pod.append(el[2])
+                            print('!!!')
+                elif 18<pog<30:
+                    for el in kurtka:
+                        if el[5] == 'Норм':
+                            k_pod.append(el[2])
+                elif pog>30:
+                    for el in kurtka:
+                        if el[5] == 'Когда жарко':
+                            k_pod.append(el[2])
+    print("Чет есть")
     print(*k_pod)
+    bot.send_message(message.chat.id, f"Сегодня " +str(pog)+ " градусов")
 
     '''elif el[3] == "Штаны":
         if el[4] == "Зимняя":
@@ -303,7 +320,7 @@ def algo(kurtka, message):#сделать связь с погодой!!!
             elif el[5] == 'В теплые дни':
                 a = 15
                 if S not in N: S += a'''
-    #bot.send_message(message.chat.id, f"Сегодня {pog} градусов. Можно надеть " + k_pod[0])
+    bot.send_message(message.chat.id, f"Сегодня {pog} градусов. Можно надеть " + k_pod[0])
 
 
 
